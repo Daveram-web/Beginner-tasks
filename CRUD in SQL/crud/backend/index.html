@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset='utf-8'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <title>Image Upload</title>
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+</head>
+
+<body>
+    <div>
+        <h2>Upload Profile Picture</h2>
+        <form id="imageForm" onsubmit="handleSubmit(event)" method="POST" enctype="multipart/form-data">
+            <div>
+                <label for="image">Profile Picture</label>
+                <input type="file" id="image" name="image" class="form-control" multiple>
+            </div>
+            <button type="submit">Upload</button>
+        </form>
+    </div>
+    <div id="imageGallery">
+        <!-- Gallery for displaying uploaded images -->
+    </div>
+
+    <script>
+        const form = document.getElementById("imageForm");
+        const images = [];
+        
+        async function handleSubmit(event) {
+            event.preventDefault();
+            const formData = new FormData(form);
+            try {
+                const response = await fetch('http://localhost:3001/Emp/ImgCreate', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+                alert(data.message || 'Image uploaded successfully!');
+                fetchImages();
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred while uploading the image.');
+            }
+        }
+
+        async function fetchImages() {
+            try {
+                const response = await fetch('http://localhost:3001/Emp/ImgCreate');
+                const data = await response.json();
+                images.length = 0;
+                images.push(...data);
+                displayImages();
+            } catch (error) {
+                console.error('Error fetching images:', error);
+                alert('An error occurred while fetching the images.');
+            }
+        }
+
+        function displayImages() {
+    const gallery = document.getElementById('imageGallery');
+    gallery.innerHTML = ''; // Clear existing images
+
+    // Loop through the image URLs and display each image
+    images.forEach(image => {
+        image.Image.forEach(imgPath => { // Handle multiple images per entry
+            const imgElement = document.createElement('img');
+            imgElement.src = `http://localhost:3001${imgPath}`; // Use the parsed path
+            imgElement.alt = 'Uploaded Image';
+            imgElement.style.width = '100px'; // Resize for display
+            imgElement.style.margin = '10px';
+
+            gallery.appendChild(imgElement);
+        });
+    });
+}
+
+
+        window.onload = fetchImages;
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <div>
+        <h2>Upload Images</h2>
+        <form id="form-image" onsubmit="handleSubmit(event)" method="post">
+            <div>
+                <label>Picture</label>
+                <input type="file" id="image" name="image" class="form-control" multiple>
+                <button type="submit">Upload</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+      const form = document.getElementById("form-image");
+
+function handleSubmit(event) {
+    event.preventDefault();
+
+    const formData = new FormData();
+    const imageInput = document.getElementById('image');
+    Array.from(imageInput.files).forEach(file => {
+        formData.append('image', file);
+    });
+
+    fetch('http://localhost:5000/Image/Create', {
+        method: 'POST',
+        body: formData
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.message) {
+                alert(data.message);
+            } else {
+                alert('Image uploaded successfully!');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while uploading the image.');
+        });
+}
+
+    </script>
+</body>
+</html>

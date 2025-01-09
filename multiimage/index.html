@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Image Upload</title>
+</head>
+<body>
+  <h1>Image Upload</h1>
+  <form id="uploadForm" enctype="multipart/form-data">
+    <label for="name">Image Name: </label>
+    <input type="text" id="name" name="name" required>
+    <input type="file" name="images" id="images" multiple required>
+    <button type="submit">Upload Images</button>
+  </form>
+
+  <h2>Image Names</h2>
+  <table id="imageTable">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script>
+    document.getElementById('uploadForm').addEventListener('submit', async function (e) {
+      e.preventDefault();
+
+      const formData = new FormData();
+      formData.append('name', document.getElementById('name').value);
+      const images = document.getElementById('images').files;
+      for (let i = 0; i < images.length; i++) {
+        formData.append('images', images[i]);
+      }
+
+      try {
+        const response = await fetch('http://localhost:3000/upload', {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (response.ok) {
+          alert('Images uploaded successfully!');
+          fetchImageNames();
+        } else {
+          alert('Error uploading images!');
+        }
+      } catch (error) {
+        console.error(error);
+        alert('Error uploading images!');
+      }
+    });
+
+    async function fetchImageNames() {
+      const response = await fetch('http://localhost:3000/names');
+      const data = await response.json();
+      const imageTableBody = document.querySelector('#imageTable tbody');
+      imageTableBody.innerHTML = ''; // Clear existing table data
+
+      data.forEach((item) => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${item.name}</td>
+          <td><a href="edit.html?name=${item.name}">Edit</a></td>
+        `;
+        imageTableBody.appendChild(row);
+      });
+    }
+
+    window.onload = fetchImageNames; // Fetch names on page load
+  </script>
+</body>
+</html>

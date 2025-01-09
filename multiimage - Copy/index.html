@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard - Image Management</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f9;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+    }
+    .form-container, .image-list {
+      margin: 20px auto;
+      max-width: 800px;
+      padding: 20px;
+      background-color: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+    .image-list {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: start;
+    }
+    .image-item {
+      margin: 10px;
+      padding: 10px;
+      background-color: #f0f0f0;
+      border-radius: 8px;
+      text-align: center;
+      width: 120px;
+    }
+    .image-item img {
+      width: 100px;
+      height: 100px;
+      object-fit: cover;
+      margin-bottom: 10px;
+    }
+    .image-item button {
+      background-color: #ff4d4d;
+      color: white;
+      border: none;
+      padding: 5px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .image-item button:hover {
+      background-color: #ff1a1a;
+    }
+    .btn {
+      background-color: #4CAF50;
+      color: white;
+      padding: 10px;
+      border-radius: 5px;
+      border: none;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Admin Dashboard - Image Management</h1>
+
+  <div class="form-container">
+    <form id="image-upload-form" enctype="multipart/form-data">
+      <input type="text" name="name" placeholder="Image Name" required><br><br>
+      <input type="file" name="images" multiple required><br><br>
+      <button class="btn" type="submit">Upload Images</button>
+    </form>
+  </div>
+
+  <div class="image-list" id="image-list"></div>
+
+  <script>
+    const form = document.getElementById('image-upload-form');
+    const imageList = document.getElementById('image-list');
+
+    // Handle the image upload form submission
+    form.addEventListener('submit', async function (e) {
+      e.preventDefault(); // Prevent the form from submitting normally
+      const formData = new FormData(form); // Collect form data
+
+      try {
+        // Send image data to the backend for uploading
+        const response = await fetch('http://localhost:3000/upload', {
+          method: 'POST',
+          body: formData
+        });
+
+        const result = await response.text();
+        alert(result); // Show success or error message
+        fetchImages(); // Refresh the list of images after upload
+      } catch (error) {
+        alert('Error uploading images: ' + error.message);
+      }
+    });
+
+    // Fetch the list of uploaded images
+    async function fetchImages() {
+      try {
+        const response = await fetch('http://localhost:3000/images');
+        const images = await response.json();
+
+        imageList.innerHTML = ''; // Clear previous images
+
+        // Render each image as an item in the list
+        images.forEach(image => {
+          const div = document.createElement('div');
+          div.classList.add('image-item');
+          div.innerHTML = `
+            <img src="http://127.0.0.1:5500/${image.path}" alt="Image varala">
+            <div>${image.name}</div>
+            <button onclick="deleteImage(${image.id})">Delete</button>
+          `;
+          imageList.appendChild(div);
+        });
+      } catch (error) {
+        alert('Error fetching images: ' + error.message);
+      }
+    }
+
+    // Delete an image from the list and backend
+    async function deleteImage(id) {
+      try {
+        const response = await fetch(`http://localhost:3000/image/${id}`, {
+          method: 'DELETE'
+        });
+
+        const result = await response.text();
+        alert(result); // Show success or error message
+        fetchImages(); // Refresh the image list after deletion
+      } catch (error) {
+        alert('Error deleting image: ' + error.message);
+      }
+    }
+
+    // Load images when the page is loaded
+    fetchImages(); 
+  </script>
+</body>
+</html>

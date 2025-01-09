@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset='utf-8'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <title>Page Title</title>
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+    <link rel='stylesheet' type='text/css' media='screen' href='main.css'>
+    <script src='main.js'></script>
+</head>
+
+<body>
+    <div>
+        <h2>Upload Profile Picture</h2>
+        <form id="imageForm" onsubmit="handleSubmit(event)" method="POST" enctype="multipart/form-data">
+
+            <div>
+                <label for="image">Profile Picture</label>
+                <input type="file" id="image" name="image" class="form-control" multiple >
+            </div>
+
+            <button type="submit">Upload</button>
+
+            <img src="/uploads/1734587271581-img.png"/>
+        </form>
+    </div>
+
+    <script>
+        const form = document.getElementById("imageForm");
+        const images = []
+        function handleSubmit(event) {
+            event.preventDefault(); // Prevent form from submitting the default way
+
+            const formData = new FormData();
+            const imageInput = document.getElementById('image');
+            console.log(imageInput.files[0])
+            Object.keys(imageInput.files).forEach(file =>{
+                formData.append('image', imageInput.files[file]) // Append the selected file to FormData
+            } 
+            )
+            // return;
+            // Upload the image
+            fetch('http://localhost:3001/Emp/ImgCreate', {
+                method: 'POST',
+                body: formData
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.message) {
+                        alert(data.message);
+                    } else {
+                        alert('Image uploaded successfully!');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while uploading the image.');
+                });
+
+            // Fetch the uploaded image details
+        }
+
+        const fetchImages = () => {
+            fetch('http://localhost:3001/Emp/ImgCreate', {
+                method: 'GET',
+            })
+                .then(response => response.json()) // Parse the response as JSON
+                .then(data => {
+                    images.push(...data);
+                    console.log('Fetched image details  :', data);
+                    // displayImages(); 
+                    // You can display the fetched image details here, if needed
+                })
+                .catch(error => {
+                    console.error('Error fetching image details:', error);
+                    alert('An error occurred while fetching the image details.');
+                });     
+        }
+
+        function displayImages() {
+            const gallery = document.getElementById('imageGallery');
+            gallery.innerHTML = ''; // Clear existing images
+
+            // Loop through the image URLs and display each image
+            images.forEach(image => {
+                const imgElement = document.createElement('img');
+                imgElement.src = `http://localhost:3001/${image.Image}`; // Assuming the response contains an 'imageUrl' property
+                imgElement.alt = 'Uploaded Image';
+                imgElement.style.width = '100px'; // Resize for display
+                imgElement.style.margin = '10px';
+
+                console.log("in")
+
+                gallery.appendChild(imgElement);
+            });
+        }
+
+        // Fetch the images initially when the page loads
+        window.onload = fetchImages;
+
+    </script>
+</body>
+
+</html>
